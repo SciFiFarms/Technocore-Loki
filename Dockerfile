@@ -1,1 +1,3 @@
-FROM grafana/loki:master-dc1c31a
+FROM grafana/loki:master-922f1da
+
+CMD ["-config.file=/etc/loki/local-config.yaml"]
