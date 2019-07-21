@@ -1,0 +1,69 @@
+version: "3.5"
+
+x-logging-defaults: &logging-defaults
+  logging:
+    driver: "journald"
+    options:
+      tag: "{{.Name}}"
+
+networks:
+  loki:
+
+volumes:
+  loki:
+
+services:
+  grafana:
+    networks:
+      - loki
+  loki:
+    deploy:
+      mode: global
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+      restart_policy:
+        condition: any
+    image: ${image_provider:-scififarms}/technocore-loki:${TAG:-latest}
+    <<: *logging-defaults
+    networks:
+      - loki
+    #secrets:
+    #  - source: loki_cert_bundle
+    #    target: cert_bundle
+    #  - source: loki_key
+    #    target: key
+    #  - source: ca
+    #    target: ca
+    volumes:
+      - loki:/var/lib/loki
+
+  fluentd:
+    command:
+      - "fluentd"
+      - "-v"
+      - "-p"
+      - "/fluentd/plugins"
+    deploy:
+      mode: global
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+      restart_policy:
+        condition: any
+    environment:
+      LOKI_URL: http://loki:3100
+    image: ${image_provider:-scififarms}/technocore-fluentd:${TAG:-latest}
+    <<: *logging-defaults
+    networks:
+      - loki
+    volumes:
+      - /var/log:/var/log
+      # Needed for journald log ingestion:
+      - /etc/machine-id:/etc/machine-id
+      - /dev/log:/dev/log
+      - /var/run/systemd/journal/:/var/run/systemd/journal/
