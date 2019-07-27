@@ -1,11 +1,5 @@
 version: "3.5"
 
-x-logging-defaults: &logging-defaults
-  logging:
-    driver: "journald"
-    options:
-      tag: "{{.Name}}"
-
 networks:
   loki:
 
@@ -27,7 +21,10 @@ services:
       restart_policy:
         condition: any
     image: ${image_provider:-scififarms}/technocore-loki:${TAG:-latest}
-    <<: *logging-defaults
+    logging:
+      driver: "${LOGGING_DRIVER}"
+      options:
+        tag: "{{.Name}}"
     networks:
       - loki
     #secrets:
@@ -58,7 +55,10 @@ services:
     environment:
       LOKI_URL: http://loki:3100
     image: ${image_provider:-scififarms}/technocore-fluentd:${TAG:-latest}
-    <<: *logging-defaults
+    logging:
+      driver: "${LOGGING_DRIVER}"
+      options:
+        tag: "{{.Name}}"
     networks:
       - loki
     volumes:
