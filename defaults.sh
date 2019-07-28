@@ -1,3 +1,3 @@
 #!/bin/env bash
 
-set_service_flag loki yes
+set_service_flag loki
